@@ -89,10 +89,10 @@ class _MainScreenState extends State<MainScreen> {
       case "60311":
       case "60313":
         return 'Frankfurt am Main';
-      case '56244':
+      case "56244":
         return 'Freilingen';
       default:
-        return 'Unbekannte Stadt';
+        return 'Fehler: Bitte gib eine gültige PLZ ein.';
     }
   }
 }
