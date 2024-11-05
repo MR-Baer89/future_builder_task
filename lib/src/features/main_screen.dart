@@ -8,34 +8,59 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final _postalCodeController = TextEditingController();
+  Future<String>? _cityFuture;
+
   @override
   void initState() {
     super.initState();
-    // TODO: initiate controllers
+    _cityFuture = Future.value('Noch keine PLZ gesucht');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plz Suche'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center(
           child: Column(
             children: [
-              const TextField(
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: "Postleitzahl"),
+              TextField(
+                controller: _postalCodeController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Postleitzahl",
+                ),
               ),
               const SizedBox(height: 32),
-              OutlinedButton(
+              ElevatedButton(
                 onPressed: () {
-                  // TODO: implementiere Suche
+                  setState(() {
+                    _cityFuture = getCityFromZip(_postalCodeController.text);
+                  });
                 },
                 child: const Text("Suche"),
               ),
               const SizedBox(height: 32),
-              Text("Ergebnis: Noch keine PLZ gesucht",
-                  style: Theme.of(context).textTheme.labelLarge),
+              FutureBuilder<String>(
+                future: _cityFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text(
+                        'Fehler: Bitte gib eine gültige PLZ ein.');
+                  } else if (snapshot.hasData &&
+                      snapshot.data != 'Noch keine PLZ gesucht') {
+                    return Text('${snapshot.data}');
+                  } else {
+                    return const Text('Noch keine PLZ gesucht');
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -45,12 +70,11 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
-    // TODO: dispose controllers
+    _postalCodeController.dispose();
     super.dispose();
   }
 
   Future<String> getCityFromZip(String zip) async {
-    // simuliere Dauer der Datenbank-Anfrage
     await Future.delayed(const Duration(seconds: 3));
 
     switch (zip) {
@@ -65,6 +89,8 @@ class _MainScreenState extends State<MainScreen> {
       case "60311":
       case "60313":
         return 'Frankfurt am Main';
+      case '56244':
+        return 'Freilingen';
       default:
         return 'Unbekannte Stadt';
     }
